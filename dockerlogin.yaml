@@ -1,0 +1,66 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: dockerlogin
+spec:
+  version: v0.1.0
+  homepage: https://github.com/inercia/docker-credential-desktop-to-kube
+  shortDescription: Convert Docker credentials to Kubernetes secrets
+  description: |
+    Automatically converts credentials stored in Docker credential store
+    (such as docker-credential-desktop) to Kubernetes docker-registry secrets.
+    
+    This plugin is especially useful when you have credentials configured in
+    Docker Desktop and need your Kubernetes pods to pull images from the same
+    private registries.
+    
+    Features:
+    - Automatic migration of all Docker credentials
+    - Support for multiple registries
+    - Flexible filtering (include/exclude specific registries)
+    - Dry-run mode for previewing changes
+    - Automatic generation of valid Kubernetes secret names
+  caveats: |
+    This plugin requires:
+    - jq command-line JSON processor
+    - A Docker credential helper (default: docker-credential-desktop)
+    - kubectl with appropriate cluster access
+    
+    The plugin will create docker-registry type secrets in the specified
+    namespace. Make sure you have the necessary permissions.
+  platforms:
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+    uri: https://github.com/inercia/docker-credential-desktop-to-kube/releases/download/v0.1.0/dockerlogin_linux_amd64.tar.gz
+    sha256: "REPLACE_WITH_ACTUAL_SHA256_LINUX_AMD64"
+    bin: kubectl-dockerlogin
+  - selector:
+      matchLabels:
+        os: linux
+        arch: arm64
+    uri: https://github.com/inercia/docker-credential-desktop-to-kube/releases/download/v0.1.0/dockerlogin_linux_arm64.tar.gz
+    sha256: "REPLACE_WITH_ACTUAL_SHA256_LINUX_ARM64"
+    bin: kubectl-dockerlogin
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    uri: https://github.com/inercia/docker-credential-desktop-to-kube/releases/download/v0.1.0/dockerlogin_darwin_amd64.tar.gz
+    sha256: "REPLACE_WITH_ACTUAL_SHA256_DARWIN_AMD64"
+    bin: kubectl-dockerlogin
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
+    uri: https://github.com/inercia/docker-credential-desktop-to-kube/releases/download/v0.1.0/dockerlogin_darwin_arm64.tar.gz
+    sha256: "REPLACE_WITH_ACTUAL_SHA256_DARWIN_ARM64"
+    bin: kubectl-dockerlogin
+  - selector:
+      matchLabels:
+        os: windows
+        arch: amd64
+    uri: https://github.com/inercia/docker-credential-desktop-to-kube/releases/download/v0.1.0/dockerlogin_windows_amd64.tar.gz
+    sha256: "REPLACE_WITH_ACTUAL_SHA256_WINDOWS_AMD64"
+    bin: kubectl-dockerlogin.exe

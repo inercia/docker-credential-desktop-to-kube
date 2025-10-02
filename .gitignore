@@ -1,0 +1,18 @@
+# .gitignore for kubectl-dockerlogin plugin
+
+# Build artifacts
+dist/
+*.tar.gz
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Testing
+test-secrets/

@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        run: |
+          echo "Building release ${GITHUB_REF_NAME}"
+
+      - name: Build release artifacts
+        run: |
+          ./build.sh ${GITHUB_REF_NAME}
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd dist
+          sha256sum *.tar.gz > checksums.txt
+          cat checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/*.tar.gz
+            dist/checksums.txt
+          body: |
+            ## Installation
+            
+            ```bash
+            kubectl krew install dockerlogin
+            ```
+            
+            Or download manually for your platform and add to PATH.
+            
+            ## SHA256 Checksums
+            
+            ```
+            $(cat dist/checksums.txt)
+            ```
+            
+            ## What's Changed
+            
+            See [README](https://github.com/${{ github.repository }}) for full documentation.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Krew manifest reminder
+        run: |
+          echo "::notice::Don't forget to update dockerlogin.yaml with new SHA256 checksums and submit to krew-index!"
