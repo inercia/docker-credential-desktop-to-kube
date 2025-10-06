@@ -79,28 +79,74 @@ echo ""
 echo -e "${GREEN}✓ Tag ${NEW_TAG} created and pushed successfully!${NC}"
 echo ""
 
-# Show next steps
-echo -e "${BLUE}=== Next Steps ===${NC}"
+# Check if gh CLI is available
+if ! command -v gh &> /dev/null; then
+    echo -e "${YELLOW}Warning: GitHub CLI (gh) not found${NC}"
+    echo -e "${YELLOW}Please install it from: https://cli.github.com/${NC}"
+    echo ""
+    echo -e "${YELLOW}Manual steps required:${NC}"
+    echo -e "1. Create release at: ${BLUE}https://github.com/inercia/docker-credential-desktop-to-kube/releases/new?tag=${NEW_TAG}${NC}"
+    echo ""
+    echo -e "${YELLOW}GitHub Actions will automatically build and upload artifacts${NC}"
+    exit 0
+fi
+
+# Create GitHub release (without artifacts - they'll be built by GitHub Actions)
+echo -e "${BLUE}=== Creating GitHub Release ===${NC}"
+echo -e "${BLUE}Creating release ${NEW_TAG}...${NC}"
+
+if gh release create "$NEW_TAG" \
+    --title "Release $NEW_TAG" \
+    --notes "$RELEASE_NOTES"; then
+    
+    echo ""
+    echo -e "${GREEN}✓ GitHub release created successfully!${NC}"
+    echo ""
+else
+    echo -e "${RED}Error: Failed to create GitHub release${NC}"
+    exit 1
+fi
+
+echo -e "${BLUE}GitHub Actions will now build and upload the release artifacts automatically.${NC}"
 echo ""
-echo -e "${YELLOW}1. Build release artifacts:${NC}"
-echo -e "   ${GREEN}./build.sh ${NEW_TAG}${NC}"
+
+# Update dockerlogin.yaml version
+echo -e "${BLUE}=== Updating dockerlogin.yaml ===${NC}"
+
+if [ -f "dockerlogin.yaml" ]; then
+    # Create backup
+    cp dockerlogin.yaml dockerlogin.yaml.bak
+    
+    # Update version
+    if command -v sed &> /dev/null; then
+        # macOS sed requires explicit backup extension
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s/version: v[0-9.]\+/version: $NEW_TAG/" dockerlogin.yaml
+        else
+            sed -i "s/version: v[0-9.]\+/version: $NEW_TAG/" dockerlogin.yaml
+        fi
+        echo -e "${GREEN}✓ Updated version in dockerlogin.yaml to ${NEW_TAG}${NC}"
+    fi
+    
+    echo -e "${YELLOW}Backup saved as: dockerlogin.yaml.bak${NC}"
+else
+    echo -e "${YELLOW}Warning: dockerlogin.yaml not found${NC}"
+fi
+
 echo ""
-echo -e "${YELLOW}2. Create GitHub release with artifacts:${NC}"
-echo -e "   ${GREEN}gh release create ${NEW_TAG} \\${NC}"
-echo -e "   ${GREEN}  --title \"${NEW_TAG}\" \\${NC}"
-echo -e "   ${GREEN}  --notes \"${RELEASE_NOTES}\" \\${NC}"
-echo -e "   ${GREEN}  dist/*.tar.gz${NC}"
+echo -e "${BLUE}=== Release Complete! ===${NC}"
 echo ""
-echo -e "   Or manually at:"
-echo -e "   ${BLUE}https://github.com/inercia/docker-credential-desktop-to-kube/releases/new?tag=${NEW_TAG}${NC}"
+echo -e "${GREEN}✓ Tag created and pushed: ${NEW_TAG}${NC}"
+echo -e "${GREEN}✓ GitHub release created${NC}"
+echo -e "${GREEN}✓ Version updated in dockerlogin.yaml${NC}"
 echo ""
-echo -e "${YELLOW}3. Update dockerlogin.yaml with SHA256 checksums:${NC}"
-echo -e "   ${GREEN}sha256sum dist/*.tar.gz${NC}"
-echo ""
-echo -e "${YELLOW}4. Test the plugin installation:${NC}"
+echo -e "${YELLOW}Next steps:${NC}"
+echo -e "1. Wait for GitHub Actions to build and upload artifacts"
+echo -e "2. Once artifacts are uploaded, download them and update SHA256 checksums in dockerlogin.yaml"
+echo -e "3. Update release URLs in dockerlogin.yaml if needed"
+echo -e "4. Test the plugin installation:"
 echo -e "   ${GREEN}kubectl krew install --manifest=dockerlogin.yaml${NC}"
-echo ""
-echo -e "${YELLOW}5. Submit to Krew Index (if ready):${NC}"
+echo -e "5. Submit to Krew Index when ready:"
 echo -e "   - Fork: https://github.com/kubernetes-sigs/krew-index"
 echo -e "   - Add/update dockerlogin.yaml in plugins/ directory"
 echo -e "   - Create PR with description"
