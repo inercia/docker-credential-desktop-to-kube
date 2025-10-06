@@ -4,12 +4,47 @@
 
 Follow these steps to create a new release of the kubectl-dockerlogin plugin:
 
-### 1. Update Version
+### Quick Start with release.sh (Recommended)
+
+Use the automated release script for a guided release process:
+
+```bash
+./release.sh
+```
+
+The script will:
+
+1. Show existing tags
+2. Prompt for the new tag version (e.g., v0.1.0)
+3. Ask for release notes
+4. Create and push the annotated tag
+5. Display next steps for completing the release
+
+Then follow the displayed instructions to:
+
+- Build release artifacts
+- Create GitHub release
+- Update SHA256 checksums
+- Test and submit to Krew
+
+### Manual Release Process
+
+If you prefer to release manually, follow these steps:
+
+#### 1. Update Version
 
 - Update version in `dockerlogin.yaml`
 - Tag the release in git
 
-### 2. Build Release Artifacts
+#### 2. Create and Push Git Tag
+
+```bash
+# Create a git tag
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+#### 3. Build Release Artifacts
 
 ```bash
 # Build all platform binaries
@@ -23,13 +58,9 @@ Follow these steps to create a new release of the kubectl-dockerlogin plugin:
 # - windows/amd64
 ```
 
-### 3. Create GitHub Release
+#### 4. Create GitHub Release
 
 ```bash
-# Create a git tag
-git tag -a v0.1.0 -m "Release v0.1.0"
-git push origin v0.1.0
-
 # Create release on GitHub
 gh release create v0.1.0 \
   --title "v0.1.0" \
@@ -38,7 +69,8 @@ gh release create v0.1.0 \
 ```
 
 Or manually:
-1. Go to https://github.com/inercia/docker-credential-desktop-to-kube/releases
+
+1. Go to <https://github.com/inercia/docker-credential-desktop-to-kube/releases>
 2. Click "Draft a new release"
 3. Choose tag: v0.1.0
 4. Upload all `.tar.gz` files from `dist/`
@@ -70,7 +102,7 @@ kubectl krew uninstall dockerlogin
 
 ### 6. Submit to Krew Index
 
-1. Fork https://github.com/kubernetes-sigs/krew-index
+1. Fork <https://github.com/kubernetes-sigs/krew-index>
 2. Add `dockerlogin.yaml` to `plugins/` directory
 3. Create a PR with:
    - Title: "Add kubectl-dockerlogin plugin"
